@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Catcher Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            background-color: #e0e0e0; /* Gray background for title */
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 90vh;
+            background-color: white; /* White background for game area */
+            overflow: hidden;
+        }
+        /* Character Styling */
+        .character {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px; /* Increased size */
+            height: 80px; /* Increased size */
+            background-image: url('robot-game-character.png'); /* Path to your character image */
+            background-size: cover;
+            background-position: center;
+            z-index: 2;
+        }
+        .item {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: gold;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #333;
+            z-index: 3;
+        }
+    </style>
+</head>
+<body>
+    <h2>Crypto Catcher Game</h2>
+    <p>Catch the falling crypto items to score points!</p>
+    <div id="gameContainer">
+        <div class="character" id="character"></div>
+        <div class="score" id="score">Score: 0</div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        const character = document.getElementById('character');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let characterX = gameContainer.offsetWidth / 2 - character.offsetWidth / 2;
+        let itemSpeed = 2;
+        let itemSpawnInterval = 2000; // Spawn a new item every 2 seconds
+
+        // Update character position
+        function updateCharacterPosition() {
+            character.style.left = `${characterX}px`;
+        }
+
+        // Move character with arrow keys
+        document.addEventListener('keydown', (e) => {
+            const step = 40; // Increased movement speed
+            if (e.key === 'ArrowLeft' && characterX > 0) {
+                characterX -= step;
+            } else if (e.key === 'ArrowRight' && characterX < gameContainer.offsetWidth - character.offsetWidth) {
+                characterX += step;
+            }
+            updateCharacterPosition();
+        });
+
+        // Spawn a new item
+        function spawnItem() {
+            const item = document.createElement('div');
+            item.classList.add('item');
+            item.style.left = `${Math.random() * (gameContainer.offsetWidth - 40)}px`;
+            item.style.top = '0px';
+            gameContainer.appendChild(item);
+
+            // Move the item down
+            const itemFallInterval = setInterval(() => {
+                const itemY = item.offsetTop;
+                if (itemY + item.offsetHeight >= gameContainer.offsetHeight - character.offsetHeight) {
+                    // Check if item is caught based on character position and item position
+                    if (
+                        item.offsetLeft < characterX + character.offsetWidth &&
+                        item.offsetLeft + item.offsetWidth > characterX
+                    ) {
+                        score += 1;
+                        scoreDisplay.textContent = `Score: ${score}`;
+                        item.remove(); // Remove item when caught
+                        clearInterval(itemFallInterval);
+                    } else if (itemY + item.offsetHeight >= gameContainer.offsetHeight) {
+                        // Item missed, remove it once it hits the bottom
+                        item.remove();
+                        clearInterval(itemFallInterval);
+                    }
+                } else {
+                    item.style.top = `${itemY + itemSpeed}px`;
+                }
+            }, 20);
+
+            // Increase speed over time
+            itemSpeed += 0.05;
+        }
+
+        // Start spawning items at intervals
+        setInterval(spawnItem, itemSpawnInterval);
+
+        // Initialize character position
+        updateCharacterPosition();
+    </script>
+</body>
+</html>
